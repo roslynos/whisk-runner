@@ -1,34 +1,3 @@
-#!/bin/bash
-
-GH_OWNER=$GH_OWNER
-GH_REPOSITORY=$GH_REPOSITORY
-GH_TOKEN=$GH_TOKEN
-
-RUNNER_SUFFIX=$(cat /dev/urandom | tr -dc 'a-z0-9' | fold -w 5 | head -n 1)
-RUNNER_NAME="dockerNode-${RUNNER_SUFFIX}"
-
-REG_TOKEN=$(curl -sX POST -H "Accept: application/vnd.github.v3+json" -H "Authorization: token ${GH_TOKEN}" https://api.github.com/repos/${GH_OWNER}/${GH_REPOSITORY}/actions/runners/registration-token | jq .token --raw-output)
-
-cd /home/docker/actions-runner
-
-./config.sh --unattended --url https://github.com/${GH_OWNER}/${GH_REPOSITORY} --token ${REG_TOKEN} --name ${RUNNER_NAME}
-
-cleanup() {
-    echo "Removing runner..."
-    ./config.sh remove --unattended --token ${REG_TOKEN}
-}
-
-trap 'cleanup; exit 130' INT
-trap 'cleanup; exit 143' TERM
-
-./run.sh & wait $!
-Prepare dockerfile to build image (Linux)
-Now with our scripts ready, we can get to the fun part... Building the linux docker image. Navigate back to the root folder and create a file called: dockerfile:
-
-image.png
-
-dockerfile
-This dockerfile contains the instructions to build our container image.
 # base image
 FROM ubuntu:20.04
 
@@ -36,8 +5,7 @@ FROM ubuntu:20.04
 ARG RUNNER_VERSION
 ENV DEBIAN_FRONTEND=noninteractive
 
-LABEL Author="Marcel L"
-LABEL Email="pwd9000@hotmail.co.uk"
+LABEL Author="Bytewizer"
 LABEL GitHub="https://github.com/Pwd9000-ML"
 LABEL BaseImage="ubuntu:20.04"
 LABEL RunnerVersion=${RUNNER_VERSION}
